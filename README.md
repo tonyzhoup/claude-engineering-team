@@ -1,6 +1,6 @@
 # Claude Engineering Team
 
-**Version 1.2.1** — [**codex-engineering-team**](https://github.com/tonyzhoup/codex-engineering-team) 的 Claude Code 版本。保留同一套团队契约、交接协议与实现包格式，把执行层从 Codex 自定义 agent 换成 Claude Code subagent。两个包保持同版本号即表示契约同代。
+**Version 1.2.2** — [**codex-engineering-team**](https://github.com/tonyzhoup/codex-engineering-team) 的 Claude Code 版本，契约与其 1.2.1 同代。保留同一套团队契约、交接协议与实现包格式，把执行层从 Codex 自定义 agent 换成 Claude Code subagent。
 
 一支刻意保持精简的工程 agent 团队，目标是**简洁、长效、稳健、优雅，不过度设计**。
 
@@ -33,10 +33,8 @@ Codex 版给 `implementer`/`test_engineer` 用的是 `max`，这里改为 `xhigh
 ```text
 ~/.claude/
 ├── CLAUDE.md          # 何时该委派、路由、门禁、边界、完成标准（受管块）
-├── agents/            # 每个角色的授权、期望输入，及其输出规格（Handoff / Packet 模板）
-│   └── *.md
-└── commands/          # 工作流入口斜杠命令
-    └── eng-*.md
+└── agents/            # 每个角色的授权、期望输入，及其输出规格（Handoff / Packet 模板）
+    └── *.md
 
 <repo>/
 └── CLAUDE.md          # 仓库结构、命令、约定、约束、完成标准
@@ -58,17 +56,17 @@ Codex 版给 `implementer`/`test_engineer` 用的是 `max`，这里改为 `xhigh
 
 安装脚本会：
 
-1. 安装七个 agent 与六个斜杠命令，仅在内容变化时备份同名文件；
+1. 安装七个 agent，仅在内容变化时备份同名文件；
 2. 在全局 `CLAUDE.md` 中追加或替换一个带清晰标记的受管块，仅在内容变化时备份；
 3. 不修改 `settings.json`。
 
-只装 agent 与命令、不动全局 `CLAUDE.md`：
+只装 agent、不动全局 `CLAUDE.md`：
 
 ```bash
 ./install-user.sh --no-global
 ```
 
-安装后**重启一个新的 Claude Code 会话**：首次创建 `commands/` 目录后，文件监听不会自动加载其中的新文件。
+安装后**重启一个新的 Claude Code 会话**：首次创建 `agents/` 目录后，文件监听不会自动加载其中的新文件。
 
 ### 上下文成本
 
@@ -88,18 +86,13 @@ cp project/CLAUDE.md.template /path/to/repo/CLAUDE.md
 
 不要在每个仓库里重复全局工作流规则。项目说明要短、准、具体。
 
-## 斜杠命令
+## 怎么用
 
-| 命令 | 用途 |
-|---|---|
-| `/eng-feature <特性>` | 完整特性流程：探索 → 架构 → 架构评审 → 实现 → 测试 → 代码/验收评审 |
-| `/eng-fix <缺陷>` | 小缺陷修复，流程按风险裁剪 |
-| `/eng-design <变更>` | 只做架构：最小持久决策 + 实现包 + 独立架构评审 |
-| `/eng-debug <现象>` | 疑难调试：先复现、再证明根因、最小修正 |
-| `/eng-commit` | 终审通过后由 `git-operator` 提交（不推送） |
-| `/eng-verify` | 安装自检 |
+**不提供斜杠命令，也不需要。** 路由规则在全局块里，主对话每次会话都加载着——你只要说清目标和边界，它会自己决定用哪几个 agent、按什么顺序、在哪里插评审门禁。
 
-这些命令都设了 `disable-model-invocation: true`，只能由你手动触发，不会被模型自动加载。
+刻意不做命令入口的原因是：命令会成为路由的**第二个真相源**，与 `CLAUDE.md` 里的规则重复，两边一旦漂移就没人知道该信哪个。而"避免重复的真相源"正是这套契约自己写在 Mission 里的禁令。
+
+`sample-prompts.md` 里有几段措辞参考——那是给你抄的，不是给模型的指令。
 
 ## 预期工作流
 
@@ -136,7 +129,7 @@ Explorer(s)
 | 项目说明 | `<repo>/AGENTS.md` | `<repo>/CLAUDE.md` |
 | 推理档位 | `model_reasoning_effort` | frontmatter `effort` |
 | 只读隔离 | `sandbox_mode = "read-only"` | 工具白名单不含 `Edit`/`Write`/`NotebookEdit` + 提示词约束 |
-| 示例提示词 | `sample-prompts.md` | `commands/eng-*.md` 斜杠命令 |
+| 示例提示词 | `sample-prompts.md` | `sample-prompts.md`（同样只是参考措辞） |
 | 运行时配置 | `config-snippet.toml` | 不需要，agent 与命令自动发现 |
 | 角色命名 | `test_engineer` / `git_operator` | `test-engineer` / `git-operator`（Claude Code 只允许小写字母与连字符） |
 
@@ -222,10 +215,11 @@ teams 唯一无法被 subagent 替代的能力是**teammate 之间能互相反�
 
 ## 冒烟测试
 
-安装并重启会话后，在一个真实仓库里执行：
+安装并重启会话后，在一个真实仓库里问：
 
 ```text
-/eng-verify
+总结当前生效的工程团队路由规则、交接契约，以及可用的自定义 agent 及其配置的 model 与 effort。
+说明你加载了哪些全局与项目指令文件。不要编辑文件，也不要派生任何 subagent。
 ```
 
-然后用 `/eng-feature` 跑一个真实的中等规模需求。
+然后用 `sample-prompts.md` 里的完整特性流程跑一个真实的中等规模需求。

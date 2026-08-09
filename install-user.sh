@@ -4,7 +4,6 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CLAUDE_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
 TARGET_AGENTS="$CLAUDE_DIR/agents"
-TARGET_COMMANDS="$CLAUDE_DIR/commands"
 TARGET_GLOBAL="$CLAUDE_DIR/CLAUDE.md"
 SOURCE_GLOBAL="$SCRIPT_DIR/global/CLAUDE.md"
 STAMP="$(date +%Y%m%d-%H%M%S)-$$"
@@ -16,8 +15,8 @@ usage() {
   cat <<'USAGE'
 Usage: ./install-user.sh [--no-global]
 
-  --no-global  Install the custom agent and command files without modifying
-               the global ~/.claude/CLAUDE.md operating agreement.
+  --no-global  Install the custom agent files without modifying the global
+               ~/.claude/CLAUDE.md operating agreement.
 USAGE
 }
 
@@ -52,16 +51,11 @@ install_file() {
   echo "Installed: $label"
 }
 
-mkdir -p "$TARGET_AGENTS" "$TARGET_COMMANDS"
+mkdir -p "$TARGET_AGENTS"
 
 for src in "$SCRIPT_DIR"/agents/*.md; do
   name="$(basename "$src")"
   install_file "$src" "$TARGET_AGENTS/$name" "agent $name"
-done
-
-for src in "$SCRIPT_DIR"/commands/*.md; do
-  name="$(basename "$src")"
-  install_file "$src" "$TARGET_COMMANDS/$name" "command /${name%.md}"
 done
 
 if [[ "$INSTALL_GLOBAL" == true ]]; then
@@ -123,9 +117,8 @@ fi
 echo
 echo "Claude home: $CLAUDE_DIR"
 echo "Agents:      $TARGET_AGENTS"
-echo "Commands:    $TARGET_COMMANDS"
 if [[ "$INSTALL_GLOBAL" == true ]]; then
   echo "Global:      $TARGET_GLOBAL"
 fi
 echo "Project:     copy $SCRIPT_DIR/project/CLAUDE.md.template into each repo as CLAUDE.md and fill in real project facts."
-echo "Start a new Claude Code session so the agents, commands, and global instructions load."
+echo "Start a new Claude Code session so the agents and global instructions load."
