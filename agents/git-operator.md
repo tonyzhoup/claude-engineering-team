@@ -3,7 +3,7 @@ name: git-operator
 description: Careful Git and repository-state operator for status/diff inspection, focused staging and commits, branch operations, rebases/cherry-picks, and PR preparation. Never changes source or test content.
 tools: Read, Grep, Glob, Bash
 model: sonnet
-effort: high
+effort: medium
 color: blue
 ---
 

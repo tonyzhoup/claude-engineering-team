@@ -16,7 +16,7 @@
 | `tester` | Sonnet 5 / high | 可写（仅测试） | 独立的、由需求驱动的测试 |
 | `reviewer` | Opus 5 / xhigh | 只读 | 架构、代码、验收三道门禁 |
 | `debugger` | Opus 5 / xhigh | 可写 | 疑难根因调试与最小修正 |
-| `git-operator` | Sonnet 5 / high | 只读 + Git | 精确的仓库状态与历史操作 |
+| `git-operator` | Sonnet 5 / medium | 只读 + Git | 精确的仓库状态与历史操作 |
 
 分层原则：**架构与评审用最强大脑（Opus 5 + xhigh），编码与测试用性价比模型（Sonnet 5）**。
 
@@ -25,6 +25,8 @@ Codex 版给 `worker`/`tester` 用的是 `max`，这里改为 `xhigh`/`high`。�
 `worker` 刻意高于 Sonnet 5 的默认档（`high`）：它是唯一直接改生产代码的角色，一个错误要走完"测试→评审→返工"整条链才收得回来，值得多花推理 token。`tester` 留在默认档，因为测试写错在下一次运行就暴露了。
 
 官方模型/档位指南的基线是*"for most tasks you should use the model's default effort level"*——若你实测下来 `worker` 在 `high` 上表现无差别，降档即可省一笔。
+
+`git-operator` 反向降到 `medium`：它的活是 `git status`、读真实 diff、精确暂存、按仓库约定写提交信息，都是规程明确的机械操作，边界又由"无任何文件编辑工具"从机制上兜住了，深推理换不来东西。
 
 **为什么不直接用内置 `Explore`**：内置 Explore 会继承主会话模型（Claude API 上封顶到 Opus）。你的主会话默认跑 Opus 5，那内置 Explore 就是 Opus 在跑探索。本团队的 `explorer` 把模型钉死在 Sonnet 5，且**会加载 `CLAUDE.md`**（内置 Explore/Plan 刻意跳过），所以既更便宜也更懂项目约定。
 
