@@ -15,8 +15,8 @@
 实现 <特性>。每次交接都要保住原始需求。
 
 用最少的必要角色：路径不清楚才用 explorer；只有跨越真实架构边界才用 architect；
-实现前起一个全新的 reviewer 走 ARCHITECTURE；implementer 严格按实现包做，
-只有写面不重叠的包才并行；test-engineer 做独立行为覆盖；
+实现前起一个全新的 reviewer 走 ARCHITECTURE；worker 严格按实现包做，
+只有写面不重叠的包才并行；tester 做独立行为覆盖；
 宣布完成前起一个全新的 reviewer 走 CODE+ACCEPTANCE。
 
 每条 CHANGES_REQUIRED 都按 owner 路由回去解决。不要提交。
@@ -25,8 +25,8 @@
 ## 小缺陷修复
 
 ```text
-修复 <缺陷>。流程按风险裁剪：责任路径不清楚才用 explorer；implementer 做最小修正；
-test-engineer 补一个高价值回归测试；只有存在实质风险才用 reviewer。
+修复 <缺陷>。流程按风险裁剪：责任路径不清楚才用 explorer；worker 做最小修正；
+tester 补一个高价值回归测试；只有存在实质风险才用 reviewer。
 
 一次聚焦修正或两轮验证失败之后升级到 debugger，不要靠猜测性编辑硬试。不要提交。
 ```

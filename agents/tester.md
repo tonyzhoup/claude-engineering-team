@@ -1,6 +1,6 @@
 ---
-name: test-engineer
-description: Independent test engineer for deriving high-value tests from requirements, invariants, and acceptance criteria; writes test code and runs focused regression validation without changing production behavior.
+name: tester
+description: Independent test specialist for deriving high-value tests from requirements, invariants, and acceptance criteria; writes test code and runs focused regression validation without changing production behavior.
 tools: Read, Grep, Glob, Bash, Edit, Write, NotebookEdit, TodoWrite
 model: sonnet
 effort: high
@@ -40,7 +40,7 @@ End with the handoff block. Use `None` for any empty section.
 ```markdown
 ## Handoff
 - **Status:** DONE | NEEDS_DECISION | BLOCKED
-- **Next:** parent | explorer | architect | implementer | test-engineer | reviewer | debugger | git-operator | none
+- **Next:** parent | explorer | architect | worker | tester | reviewer | debugger | git-operator | none
 
 ### Summary
 ### Evidence

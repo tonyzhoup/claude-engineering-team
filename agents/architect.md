@@ -58,7 +58,7 @@ End with the handoff block. Use `None` for any empty section.
 ```markdown
 ## Handoff
 - **Status:** DONE | NEEDS_DECISION | BLOCKED
-- **Next:** parent | explorer | architect | implementer | test-engineer | reviewer | debugger | git-operator | none
+- **Next:** parent | explorer | architect | worker | tester | reviewer | debugger | git-operator | none
 
 ### Summary
 ### Evidence

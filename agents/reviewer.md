@@ -40,7 +40,7 @@ For each finding use:
 - **ID:** R1
 - **Severity:** BLOCKER | HIGH | MEDIUM
 - **Category:** ARCHITECTURE | REQUIREMENT | IMPLEMENTATION | TEST | SECURITY | DEBUG | GIT
-- **Owner:** architect | implementer | test-engineer | debugger | git-operator | parent
+- **Owner:** architect | worker | tester | debugger | git-operator | parent
 - **Evidence:** concrete path/symbol/behavior
 - **Impact:** why it matters
 - **Correction:** smallest practical correction
@@ -55,7 +55,7 @@ End with the handoff block. Use `None` for any empty section.
 ```markdown
 ## Handoff
 - **Status:** DONE | NEEDS_DECISION | BLOCKED
-- **Next:** parent | explorer | architect | implementer | test-engineer | reviewer | debugger | git-operator | none
+- **Next:** parent | explorer | architect | worker | tester | reviewer | debugger | git-operator | none
 
 ### Summary
 ### Evidence

@@ -1,6 +1,8 @@
 # Claude Engineering Team
 
-**Version 1.2.2** — [**codex-engineering-team**](https://github.com/tonyzhoup/codex-engineering-team) 的 Claude Code 版本，契约与其 1.2.1 同代。保留同一套团队契约、交接协议与实现包格式，把执行层从 Codex 自定义 agent 换成 Claude Code subagent。
+**Version 2.0.0** — [**codex-engineering-team**](https://github.com/tonyzhoup/codex-engineering-team) 的 Claude Code 版本，契约与其 2.0.0 同代。保留同一套团队契约、交接协议与实现包格式，把执行层从 Codex 自定义 agent 换成 Claude Code subagent。
+
+本次是**破坏性角色改名**：`implementer` → `worker`，`test-engineer` → `tester`。安装脚本会自动迁移旧文件，见[从 1.x 升级](#从-1x-升级)。
 
 一支刻意保持精简的工程 agent 团队，目标是**简洁、长效、稳健、优雅，不过度设计**。
 
@@ -10,19 +12,19 @@
 |---|---|---|---|
 | `explorer` | Sonnet 5 / high | 只读 | 仓库事实、执行路径、归属、影响面 |
 | `architect` | Opus 5 / xhigh | 只读 | 最小持久决策与实现包 |
-| `implementer` | Sonnet 5 / high | 可写 | 有边界的生产代码实现 |
-| `test-engineer` | Sonnet 5 / high | 可写（仅测试） | 独立的、由需求驱动的测试 |
+| `worker` | Sonnet 5 / high | 可写 | 有边界的生产代码实现 |
+| `tester` | Sonnet 5 / high | 可写（仅测试） | 独立的、由需求驱动的测试 |
 | `reviewer` | Opus 5 / xhigh | 只读 | 架构、代码、验收三道门禁 |
 | `debugger` | Opus 5 / xhigh | 可写 | 疑难根因调试与最小修正 |
 | `git-operator` | Sonnet 5 / high | 只读 + Git | 精确的仓库状态与历史操作 |
 
 分层原则：**架构与评审用最强大脑（Opus 5 + xhigh），编码与测试用性价比模型（Sonnet 5）**。
 
-Codex 版给 `implementer`/`test_engineer` 用的是 `max`，这里改为 `xhigh`/`high`。不用 `max` 是因为官方文档明确标注它"容易过度思考、收益递减，大规模采用前需实测"。
+Codex 版给 `worker`/`tester` 用的是 `max`，这里改为 `xhigh`/`high`。不用 `max` 是因为官方文档明确标注它"容易过度思考、收益递减，大规模采用前需实测"。
 
-`implementer` 刻意高于 Sonnet 5 的默认档（`high`）：它是唯一直接改生产代码的角色，一个错误要走完"测试→评审→返工"整条链才收得回来，值得多花推理 token。`test-engineer` 留在默认档，因为测试写错在下一次运行就暴露了。
+`worker` 刻意高于 Sonnet 5 的默认档（`high`）：它是唯一直接改生产代码的角色，一个错误要走完"测试→评审→返工"整条链才收得回来，值得多花推理 token。`tester` 留在默认档，因为测试写错在下一次运行就暴露了。
 
-官方模型/档位指南的基线是*"for most tasks you should use the model's default effort level"*——若你实测下来 `implementer` 在 `high` 上表现无差别，降档即可省一笔。
+官方模型/档位指南的基线是*"for most tasks you should use the model's default effort level"*——若你实测下来 `worker` 在 `high` 上表现无差别，降档即可省一笔。
 
 **为什么不直接用内置 `Explore`**：内置 Explore 会继承主会话模型（Claude API 上封顶到 Opus）。你的主会话默认跑 Opus 5，那内置 Explore 就是 Opus 在跑探索。本团队的 `explorer` 把模型钉死在 Sonnet 5，且**会加载 `CLAUDE.md`**（内置 Explore/Plan 刻意跳过），所以既更便宜也更懂项目约定。
 
@@ -57,8 +59,9 @@ Codex 版给 `implementer`/`test_engineer` 用的是 `max`，这里改为 `xhigh
 安装脚本会：
 
 1. 安装七个 agent，仅在内容变化时备份同名文件；
-2. 在全局 `CLAUDE.md` 中追加或替换一个带清晰标记的受管块，仅在内容变化时备份；
-3. 不修改 `settings.json`。
+2. 迁移 1.x 遗留的 `implementer.md` / `test-engineer.md`，仅当内容与已发布版本逐字节相同；
+3. **就地**替换全局 `CLAUDE.md` 里那个带清晰标记的受管块，块前块后的内容保持原位、逐字节不变，仅在内容变化时备份；
+4. 不修改 `settings.json`。
 
 只装 agent、不动全局 `CLAUDE.md`：
 
@@ -68,11 +71,29 @@ Codex 版给 `implementer`/`test_engineer` 用的是 `max`，这里改为 `xhigh
 
 安装后**重启一个新的 Claude Code 会话**：首次创建 `agents/` 目录后，文件监听不会自动加载其中的新文件。
 
+### 从 1.x 升级
+
+直接重跑 `./install-user.sh`。它对每个遗留文件按内容判定归属：
+
+- **与 1.2.x 发布版逐字节相同** → 判定为本包所有，备份后停用，安装新角色。
+- **被你改过** → 原样保留并打印警告，绝不删除或覆盖。此时 `~/.claude/agents/` 下会同时存在新旧角色，而 Claude Code 是靠 `description` 自动选路由的，两份近似描述会让选择变得不确定——请自行确认后手动删除旧文件。
+- **新角色本身没能装上**（目标是符号链接等非常规路径）→ 不迁移，保留旧文件，打印警告。
+
+迁移只作用于 `implementer.md` 和 `test-engineer.md` 这两个写死的文件名，不会碰你自己写的任何 agent。
+
+### 安装脚本测试
+
+```bash
+./tests/test-install.sh
+```
+
+覆盖：七个角色齐全且 frontmatter 名与文件名一致、全新安装、重装幂等、受管块就地替换（含前后缀逐字节保留与无结尾换行的后缀）、四种畸形标记布局 fail closed 且不动原文件、`--no-global` 边界、遗留迁移三态、无关 agent 不受影响。
+
 ### 上下文成本
 
-`global/CLAUDE.md` 是 102 行 / 7.8 KB。装进 `~/.claude/CLAUDE.md` 后，它会加载进**每一次会话**——包括"帮我改个变量名"这种——以及**每一个 subagent**（自定义 subagent 必然加载完整 CLAUDE.md 层级，没有开关可以关掉）。一条六步流水线约 18k tokens 花在契约本身上。
+`global/CLAUDE.md` 是 117 行 / 8.9 KB。装进 `~/.claude/CLAUDE.md` 后，它会加载进**每一次会话**——包括"帮我改个变量名"这种——以及**每一个 subagent**（自定义 subagent 必然加载完整 CLAUDE.md 层级，没有开关可以关掉）。一条六步流水线约 20k tokens 花在契约本身上。
 
-官方建议单个 CLAUDE.md 控制在 200 行以内（越长越费上下文、遵守度越低），102 行在预算内。
+官方建议单个 CLAUDE.md 控制在 200 行以内（越长越费上下文、遵守度越低），117 行在预算内。
 
 契约按"谁需要谁携带"切分：路由、门禁、边界这些**主对话**才用得上的规则留在全局块；Handoff 的确切格式和 Packet 模板属于**输出规格**，下沉到产出它们的 agent 文件里。副作用是即使用 `--no-global` 只装 agent，各角色仍能产出格式正确的交接块。
 
@@ -102,8 +123,8 @@ cp project/CLAUDE.md.template /path/to/repo/CLAUDE.md
 Explorer(s)
   -> Architect
   -> 全新 Reviewer（ARCHITECTURE）
-  -> Implementer 实现包
-  -> Test Engineer
+  -> Worker 实现包
+  -> Tester
   -> 全新 Reviewer（CODE+ACCEPTANCE）
   -> 仅在需要时 Git Operator
 ```
@@ -118,6 +139,8 @@ Explorer(s)
 
 这里刻意用 Markdown 而不是 JSON 工作流 schema：人类可读、能扛住模型与版本变化，且足以让主对话决定下一步。
 
+2.0.0 起，全局块另加了一节「Lifecycle and access」，明确两件事：`worker` / `tester` / `debugger` 可以用 `SendMessage` 续用同一个实例做**同角色的有界修正**（省掉一次完整上下文重建），但 `reviewer` 的每一道门禁必须新起——门禁的独立性来自干净上下文。另外，frontmatter 里的 `tools` 只是权限模式内的默认值，不是访问保证：写角色若拿到的实际权限是只读，必须报 `ENVIRONMENT_BLOCKER` 而不是硬改。
+
 ## 与 Codex 版本的差异
 
 原版在 [tonyzhoup/codex-engineering-team](https://github.com/tonyzhoup/codex-engineering-team)。契约、角色、交接格式、实现包格式、门禁语义完全一致，差异只在平台落地方式：
@@ -130,13 +153,15 @@ Explorer(s)
 | 推理档位 | `model_reasoning_effort` | frontmatter `effort` |
 | 只读隔离 | `sandbox_mode = "read-only"` | 工具白名单不含 `Edit`/`Write`/`NotebookEdit` + 提示词约束 |
 | 示例提示词 | `sample-prompts.md` | `sample-prompts.md`（同样只是参考措辞） |
-| 运行时配置 | `config-snippet.toml` | 不需要，agent 与命令自动发现 |
-| 角色命名 | `test_engineer` / `git_operator` | `test-engineer` / `git-operator`（Claude Code 只允许小写字母与连字符） |
+| 运行时配置 | `config-snippet.toml`（含 Main 基线模型） | 不需要，agent 自动发现；主对话档位走 `settings.json` |
+| 角色命名 | `git_operator` | `git-operator`（Claude Code 只允许小写字母与连字符） |
+| 派生契约 | `fork_turns="none"` 显式限制携带的父上下文 | 普通 `Agent` 调用即零上下文；`subagent_type: "fork"` 才继承 |
 
-两处刻意的收紧：
+三处刻意的收紧：
 
 - `git-operator` 在 Claude 版本里**没有任何文件编辑工具**（Codex 版给的是 `workspace-write`）。Git 操作全部走 Bash，从机制上保证它不会改动源码或测试内容。
 - 只读角色的 Bash 仍然存在（`git diff`、`rg`、`git log` 需要），因此只读是"工具白名单 + 提示词纪律"，不是沙箱级强制。若要硬隔离，可在 `~/.claude/settings.json` 的 `permissions.deny` 中增加规则。
+- 全局块的「Spawn contract」**禁止对具名角色使用 `subagent_type: "fork"`**。fork 会继承完整父上下文、沿用父模型，并且**忽略 `model` 覆盖**——一旦 fork 出 explorer，跑的就是主对话的 Opus，本包整套模型分层当场失效。这是 Claude 版特有的坑，Codex 版没有对应物。
 
 ## 设计权衡与已知局限
 
@@ -146,7 +171,7 @@ Explorer(s)
 
 官方文档明确把"planning、implementation、testing 这类共享大量上下文的多阶段任务"列为**应该用主对话**的场景，理由是 subagent 每次都从零上下文启动，看不到会话历史。
 
-这里仍然拆分，是因为**模型分层在单一对话里做不到**——只有 subagent 才能让 architect 跑 Opus、implementer 跑 Sonnet。这正是你要的成本结构，代价就是上下文连续性。
+这里仍然拆分，是因为**模型分层在单一对话里做不到**——只有 subagent 才能让 architect 跑 Opus、worker 跑 Sonnet。这正是你要的成本结构，代价就是上下文连续性。
 
 补偿手段写进了全局契约：主对话每次委派都必须把原始需求、验收标准和上一份 handoff 放进 subagent 的 prompt。这是官方对 subagent/teammate 的头号最佳实践。
 
@@ -210,16 +235,16 @@ teams 唯一无法被 subagent 替代的能力是**teammate 之间能互相反�
 - **想更强的架构/评审大脑**：把 `architect.md`、`reviewer.md`、`debugger.md` 的 `model` 改为 `fable`。Fable 5 更适合长时间自主任务；对单次深度分析，Opus 5 + `xhigh` 通常是更好的成本/效果平衡点，所以默认用 Opus 5。
 - **想更省**：把 `explorer` 的 `effort` 降到 `medium`。注意 Haiku 4.5 不支持 `effort` 字段，改成 `haiku` 会让该字段失效。
 - **想接管所有自动探索**：把 `explorer.md` 改名为 `Explore`（`name` 和文件名一起改）。同名的用户级 subagent 会覆盖内置 Explore，Claude 的所有自动探索委派都会落到 Sonnet 上。收益是省钱，代价是改变了内置行为，默认不这么做。
-- **想让 agent 能查外部文档**：在对应 agent 的 `tools` 中加入 `WebSearch, WebFetch`，或用 `mcpServers` 字段挂载 context7 之类的 MCP。默认不给，是为了让"仓库是事实来源"这条规则成立。默认也没给 `Skill`，若你的项目技能里写了关键约定，可以给 `implementer`/`architect` 加上。
+- **想让 agent 能查外部文档**：在对应 agent 的 `tools` 中加入 `WebSearch, WebFetch`，或用 `mcpServers` 字段挂载 context7 之类的 MCP。默认不给，是为了让"仓库是事实来源"这条规则成立。默认也没给 `Skill`，若你的项目技能里写了关键约定，可以给 `worker`/`architect` 加上。
 - **主对话档位**：`~/.claude/settings.json` 的 `effortLevel` 控制 supervisor 自身的推理档；subagent 的 `effort` 会覆盖它。
 
 ## 冒烟测试
 
-安装并重启会话后，在一个真实仓库里问：
+当前验证过的 Claude Code CLI 基线是 **2.1.226**。`./tests/test-install.sh` 只验证安装脚本的行为，不能替代端到端验证——安装并重启会话后，在一个真实仓库里问：
 
 ```text
 总结当前生效的工程团队路由规则、交接契约，以及可用的自定义 agent 及其配置的 model 与 effort。
 说明你加载了哪些全局与项目指令文件。不要编辑文件，也不要派生任何 subagent。
 ```
 
-然后用 `sample-prompts.md` 里的完整特性流程跑一个真实的中等规模需求。
+确认回答里出现的是 `worker` / `tester` 而不是旧名，七个角色齐全，且模型分层与表格一致。然后用 `sample-prompts.md` 里的完整特性流程跑一个真实的中等规模需求，记录你实际用的 CLI 版本。

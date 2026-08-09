@@ -44,7 +44,7 @@ End with the handoff block. Use `None` for any empty section.
 ```markdown
 ## Handoff
 - **Status:** DONE | NEEDS_DECISION | BLOCKED
-- **Next:** parent | explorer | architect | implementer | test-engineer | reviewer | debugger | git-operator | none
+- **Next:** parent | explorer | architect | worker | tester | reviewer | debugger | git-operator | none
 
 ### Summary
 ### Evidence
@@ -59,4 +59,4 @@ Files or repository state changed; `None` if you changed nothing.
 One specific recommended next step.
 ```
 
-Successful fixes normally route to `test-engineer` and then a fresh `reviewer`.
+Successful fixes normally route to `tester` and then a fresh `reviewer`.
