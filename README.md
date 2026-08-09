@@ -1,6 +1,6 @@
 # Claude Engineering Team
 
-**Version 1.2** — [**codex-engineering-team**](https://github.com/tonyzhoup/codex-engineering-team) 的 Claude Code 版本。保留同一套团队契约、交接协议与实现包格式，把执行层从 Codex 自定义 agent 换成 Claude Code subagent。
+**Version 1.2.1** — [**codex-engineering-team**](https://github.com/tonyzhoup/codex-engineering-team) 的 Claude Code 版本。保留同一套团队契约、交接协议与实现包格式，把执行层从 Codex 自定义 agent 换成 Claude Code subagent。两个包保持同版本号即表示契约同代。
 
 一支刻意保持精简的工程 agent 团队，目标是**简洁、长效、稳健、优雅，不过度设计**。
 
